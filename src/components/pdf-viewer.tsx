@@ -285,12 +285,12 @@ export default function PDFViewer({
 
       {/* Top Toolbar */}
       <div
-        className={`flex items-center justify-between gap-2 p-2 bg-zinc-800/95 backdrop-blur border-b border-zinc-700 transition-all duration-300 shrink-0 ${
+        className={`flex items-center gap-1 sm:gap-2 p-2 bg-zinc-800/95 backdrop-blur border-b border-zinc-700 transition-all duration-300 shrink-0 overflow-x-auto no-scrollbar ${
           showControls ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-full pointer-events-none"
         }`}
       >
         {/* Navigation */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 shrink-0">
           <Button
             variant="ghost"
             size="sm"
@@ -311,16 +311,16 @@ export default function PDFViewer({
           </Button>
 
           {/* Page input */}
-          <div className="flex items-center gap-1 text-white text-sm">
+          <div className="flex items-center gap-1 text-white text-sm shrink-0">
             <Input
               type="number"
               min={1}
               max={numPages}
               value={pageNumber}
               onChange={handlePageInputChange}
-              className="w-14 h-8 text-center bg-zinc-700 border-zinc-600 text-white text-sm"
+              className="w-12 sm:w-14 h-8 text-center bg-zinc-700 border-zinc-600 text-white text-sm"
             />
-            <span>/ {numPages}</span>
+            <span className="whitespace-nowrap">/ {numPages}</span>
           </div>
 
           <Button
@@ -343,8 +343,11 @@ export default function PDFViewer({
           </Button>
         </div>
 
+        {/* Spacer pushes right controls to end on wider screens */}
+        <div className="flex-1 min-w-0" />
+
         {/* Right controls */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 shrink-0">
           {/* Tap direction toggle */}
           <Button
             variant="ghost"
@@ -366,7 +369,7 @@ export default function PDFViewer({
           >
             <ZoomOut className="h-4 w-4" />
           </Button>
-          <span className="text-white text-xs w-12 text-center">{Math.round(scale * 100)}%</span>
+          <span className="text-white text-xs w-10 sm:w-12 text-center shrink-0">{Math.round(scale * 100)}%</span>
           <Button
             variant="ghost"
             size="sm"
