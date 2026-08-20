@@ -41,7 +41,7 @@ export default function PDFViewer({
 }: PDFViewerProps) {
   const [numPages, setNumPages] = useState<number>(initialTotalPages || 0);
   const [pageNumber, setPageNumber] = useState<number>(initialPage);
-  const [scale, setScale] = useState<number>(1.0);
+  const [scale, setScale] = useState<number>(() => (typeof window !== "undefined" && window.innerWidth < 768 ? 1.25 : 1.0));
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [showControls, setShowControls] = useState<boolean>(true);
   const [isMobile, setIsMobile] = useState<boolean>(false);
