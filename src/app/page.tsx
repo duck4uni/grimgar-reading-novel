@@ -21,7 +21,7 @@ export default function LibraryPage() {
     setProgress(savedProgress);
 
     novels.forEach(async (novel) => {
-      const pdfUrl = `/novels/${encodeURIComponent(novel.filename)}`;
+      const pdfUrl = `/novels/${encodeURIComponent(novel.filename)}?v=2`;
       const cover = await extractCoverImage(pdfUrl, novel.id);
       if (cover) {
         setCovers(prev => ({ ...prev, [novel.id]: cover }));

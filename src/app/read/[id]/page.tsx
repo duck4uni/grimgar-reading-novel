@@ -162,7 +162,7 @@ export default function ReaderPage() {
       {/* PDF Viewer */}
       <div className="flex-1 overflow-hidden">
         <PDFViewer
-          pdfUrl={`/novels/${encodeURIComponent(novel.filename)}`}
+          pdfUrl={`/novels/${encodeURIComponent(novel.filename)}?v=2`}
           initialPage={currentPage}
           totalPages={novel.totalPages}
           onProgressUpdate={handleProgressUpdate}
