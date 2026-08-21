@@ -407,8 +407,9 @@ export default function PDFViewer({
         onTouchEnd={handleTouchEnd}
       >
         <Document
-          file={{ url: pdfUrl, disableRange: true, disableAutoFetch: true } as any}
+          file={pdfUrl}
           onLoadSuccess={onDocumentLoadSuccess}
+          onLoadError={(error) => console.error("PDF load error:", error, "URL:", pdfUrl)}
           loading={
             <div className="flex items-center justify-center h-[70vh]">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white" />
@@ -418,10 +419,8 @@ export default function PDFViewer({
             <div className="flex flex-col items-center justify-center h-[70vh] text-white">
               <p>Không thể tải PDF</p>
               <p className="text-sm text-zinc-400 mt-2">Vui lòng kiểm tra lại file</p>
-              <p className="text-xs text-zinc-500 mt-1">{pdfUrl}</p>
             </div>
           }
-          onError={(error) => console.error("PDF load error:", error, "URL:", pdfUrl)}
         >
           <Page
             pageNumber={pageNumber}
