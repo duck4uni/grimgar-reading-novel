@@ -1,5 +1,6 @@
 "use client";
 
+import "@/lib/polyfills";
 import { useState, useCallback, useEffect, useRef } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import { Button } from "@/components/ui/button";

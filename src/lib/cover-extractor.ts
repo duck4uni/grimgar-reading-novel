@@ -1,6 +1,8 @@
 // Extract cover image from first page of PDF
 // Uses pdf.js to render first page as canvas, then converts to data URL
 
+import "./polyfills";
+
 const coverCache: Record<string, string> = {};
 
 export async function extractCoverImage(pdfUrl: string, novelId: string): Promise<string | null> {
