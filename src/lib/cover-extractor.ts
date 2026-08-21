@@ -52,7 +52,6 @@ export async function extractCoverImage(pdfUrl: string, novelId: string): Promis
     await page.render({
       canvasContext: context,
       viewport: scaledViewport,
-      canvas,
     }).promise;
 
     // Convert to data URL (JPEG for smaller size)

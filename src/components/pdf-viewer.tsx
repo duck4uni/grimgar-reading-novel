@@ -22,19 +22,9 @@ import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import { getTapDirection, toggleTapDirection } from "@/lib/settings";
 
-// Set up PDF.js worker - use workerPort to avoid iOS Safari issues with
-// dynamic module import of workerSrc (react-pdf overrides workerSrc on import)
-if (typeof window !== "undefined" && !pdfjs.GlobalWorkerOptions.workerPort) {
-  try {
-    pdfjs.GlobalWorkerOptions.workerPort = new Worker(
-      new URL("/pdf.worker.min.mjs", window.location.origin),
-      { type: "module" }
-    );
-  } catch {
-    // Fallback to workerSrc if Worker constructor fails
-    pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
-  }
-}
+// Set up PDF.js worker (legacy build for iOS Safari 16+ compatibility)
+// Override react-pdf's default workerSrc which points to a relative path
+pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
 
 interface PDFViewerProps {
   pdfUrl: string;
