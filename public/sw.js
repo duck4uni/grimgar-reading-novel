@@ -1,4 +1,4 @@
-const CACHE_VERSION = "v5";
+const CACHE_VERSION = "v6";
 const APP_SHELL_CACHE = `grimgar-app-shell-${CACHE_VERSION}`;
 const PDF_CACHE = `grimgar-pdf-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `grimgar-runtime-${CACHE_VERSION}`;
@@ -31,7 +31,7 @@ async function postToAllClients(message) {
   clients.forEach((client) => client.postMessage(message));
 }
 
-// Pre-cache all PDFs in background, posting progress to clients
+// Pre-cache all PDFs and reader pages, posting progress to clients
 async function precacheAllPdfs() {
   if (precacheInProgress) return;
   precacheInProgress = true;
@@ -43,23 +43,39 @@ async function precacheAllPdfs() {
       precacheInProgress = false;
       return;
     }
-    const filenames = await listResponse.json();
-    const cache = await caches.open(PDF_CACHE);
+    const novels = await listResponse.json();
+    const pdfCache = await caches.open(PDF_CACHE);
+    const runtimeCache = await caches.open(RUNTIME_CACHE);
 
     let cached = 0;
     let failed = 0;
     let quotaExceeded = false;
-    const total = filenames.length;
+    const total = novels.length;
 
     await postToAllClients({ type: "PRECACHE_START", total, cached: 0 });
 
-    for (let i = 0; i < filenames.length; i++) {
-      const filename = filenames[i];
+    for (let i = 0; i < novels.length; i++) {
+      const entry = novels[i];
+      const filename = entry.filename;
       // Use encodeURIComponent to match client-side encodeURIComponent requests
       const pdfUrl = `/novels/${encodeURIComponent(filename)}`;
 
-      // Skip if already cached (ignoreSearch for consistency with fetch handler)
-      const existing = await cache.match(pdfUrl, { ignoreSearch: true });
+      // Cache reader page HTML (for offline navigation)
+      const readerUrl = `/read/${entry.id}`;
+      const existingReader = await runtimeCache.match(readerUrl);
+      if (!existingReader) {
+        try {
+          const readerResponse = await fetch(readerUrl);
+          if (readerResponse && readerResponse.status === 200) {
+            await runtimeCache.put(readerUrl, readerResponse.clone());
+          }
+        } catch (err) {
+          console.warn(`[SW] Failed to cache reader page: ${entry.id}`, err);
+        }
+      }
+
+      // Skip PDF if already cached (ignoreSearch for consistency with fetch handler)
+      const existing = await pdfCache.match(pdfUrl, { ignoreSearch: true });
       if (existing) {
         cached++;
         await postToAllClients({ type: "PRECACHE_PROGRESS", total, cached, failed, current: filename });
@@ -77,7 +93,7 @@ async function precacheAllPdfs() {
         const response = await fetch(pdfUrl);
         if (response && response.status === 200) {
           try {
-            await cache.put(pdfUrl, response.clone());
+            await pdfCache.put(pdfUrl, response.clone());
             cached++;
           } catch (putErr) {
             // QuotaExceededError - iOS storage limit hit
@@ -104,7 +120,7 @@ async function precacheAllPdfs() {
 
     precacheStatus = { total, cached, failed, done: true, quotaExceeded };
     await postToAllClients({ type: "PRECACHE_DONE", total, cached, failed, quotaExceeded });
-    console.log(`[SW] Pre-cache complete: ${cached}/${total} cached, ${failed} failed${quotaExceeded ? " (quota exceeded)" : ""}`);
+    console.log(`[SW] Pre-cache complete: ${cached}/${total} PDFs cached, ${failed} failed${quotaExceeded ? " (quota exceeded)" : ""}`);
   } catch (err) {
     console.error("[SW] Pre-cache error:", err);
     await postToAllClients({ type: "PRECACHE_ERROR", error: err.message });
@@ -132,9 +148,6 @@ self.addEventListener("activate", (event) => {
       );
 
       await self.clients.claim();
-
-      // Start pre-caching all PDFs in background (non-blocking)
-      precacheAllPdfs();
     })()
   );
 });
@@ -298,5 +311,16 @@ self.addEventListener("message", (event) => {
     } else {
       precacheAllPdfs();
     }
+  }
+  if (event.data && event.data.type === "CHECK_PRECACHE_STATUS") {
+    // Client queries status without triggering download
+    event.source && event.source.postMessage({
+      type: "PRECACHE_STATUS",
+      done: precacheStatus.done,
+      total: precacheStatus.total,
+      cached: precacheStatus.cached,
+      failed: precacheStatus.failed,
+      quotaExceeded: precacheStatus.quotaExceeded,
+    });
   }
 });

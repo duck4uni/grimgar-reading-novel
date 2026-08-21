@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 
 interface PrecacheState {
   status: "idle" | "downloading" | "done" | "error" | "quota_exceeded";
@@ -54,9 +54,9 @@ export function ServiceWorkerRegistration() {
         .then((registration) => {
           console.log("[SW] Registered:", registration.scope);
 
-          // If SW is already active, trigger pre-cache check
+          // If SW is already active, check if precache was already done
           if (registration.active) {
-            registration.active.postMessage({ type: "START_PRECACHE" });
+            registration.active.postMessage({ type: "CHECK_PRECACHE_STATUS" });
           }
         })
         .catch((err) => {
@@ -103,6 +103,17 @@ export function ServiceWorkerRegistration() {
           if (!data.quotaExceeded && data.failed === 0) {
             setTimeout(() => setShowPrecacheBar(false), 5000);
           }
+        } else if (data.type === "PRECACHE_STATUS") {
+          // SW reports existing precache status (done or not)
+          if (data.done) {
+            setPrecache({
+              status: data.quotaExceeded ? "quota_exceeded" : "done",
+              total: data.total,
+              cached: data.cached,
+              failed: data.failed,
+              current: "",
+            });
+          }
         } else if (data.type === "PRECACHE_ERROR") {
           setPrecache((prev) => ({ ...prev, status: "error" }));
         }
@@ -123,6 +134,20 @@ export function ServiceWorkerRegistration() {
         navigator.serviceWorker.removeEventListener("message", messageHandler);
       }
     };
+  }, []);
+
+  const handleStartDownload = useCallback(() => {
+    dismissedRef.current = false;
+    if (navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({ type: "START_PRECACHE" });
+    } else {
+      // SW not yet controlling, try again after registration
+      navigator.serviceWorker.ready.then((reg) => {
+        if (reg.active) {
+          reg.active.postMessage({ type: "START_PRECACHE" });
+        }
+      });
+    }
   }, []);
 
   const progress =
@@ -148,6 +173,19 @@ export function ServiceWorkerRegistration() {
             </button>
           </div>
         </div>
+      )}
+
+      {/* Download button (shown when idle and not yet downloaded) */}
+      {precache.status === "idle" && (
+        <button
+          onClick={handleStartDownload}
+          className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-4 py-2.5 rounded-full shadow-lg flex items-center gap-2 transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          Tải truyện để đọc offline
+        </button>
       )}
 
       {/* Offline indicator */}
