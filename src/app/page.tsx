@@ -7,6 +7,7 @@ import { Search, BookOpen, ArrowUpDown } from "lucide-react";
 import { STATIC_NOVELS, NovelData } from "@/lib/novels-data";
 import { getProgress } from "@/lib/storage";
 import { extractCoverImage } from "@/lib/cover-extractor";
+import { DownloadButton } from "@/components/download-button";
 
 export default function LibraryPage() {
   const [novels] = useState<NovelData[]>(STATIC_NOVELS);
@@ -63,13 +64,16 @@ export default function LibraryPage() {
               <h1 className="text-lg sm:text-xl font-bold">Grimgar</h1>
             </Link>
 
-            <button
-              onClick={() => setSortBy(sortBy === "volume" ? "title" : "volume")}
-              className="flex items-center gap-1 sm:gap-2 border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm"
-            >
-              <ArrowUpDown className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="hidden sm:inline">{sortBy === "volume" ? "Theo tập" : "Theo tên"}</span>
-            </button>
+            <div className="flex items-center gap-1 sm:gap-2">
+              <DownloadButton />
+              <button
+                onClick={() => setSortBy(sortBy === "volume" ? "title" : "volume")}
+                className="flex items-center gap-1 sm:gap-2 border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm"
+              >
+                <ArrowUpDown className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">{sortBy === "volume" ? "Theo tập" : "Theo tên"}</span>
+              </button>
+            </div>
           </div>
 
           {/* Search */}
