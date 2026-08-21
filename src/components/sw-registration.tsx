@@ -17,6 +17,8 @@ export function ServiceWorkerRegistration() {
       setShowIOSWarning(true);
       try { localStorage.setItem("ios-warning-shown", "1"); } catch {}
       try { sessionStorage.setItem("ios-warning-shown", "1"); } catch {}
+      const timer = setTimeout(() => setShowIOSWarning(false), 5000);
+      return () => clearTimeout(timer);
     }
   }, [isIOS]);
 
@@ -45,7 +47,7 @@ export function ServiceWorkerRegistration() {
   return (
     <>
       {showIOSWarning && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-amber-600 text-white text-xs rounded-lg shadow-xl px-4 py-3 max-w-[90vw]">
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-amber-600 text-white text-xs rounded-lg shadow-xl px-4 py-3 max-w-[90vw] animate-[fadeOut_0.3s_ease-in_4.7s_forwards]">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="font-medium mb-1">⚠️ iOS giới hạn lưu trữ</p>
@@ -64,7 +66,10 @@ export function ServiceWorkerRegistration() {
       )}
 
       {isOffline && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-amber-600 text-white text-xs font-medium px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
+        <div
+          className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-amber-600 text-white text-xs font-medium px-4 py-2 rounded-full shadow-lg flex items-center gap-2 animate-[fadeOut_0.3s_ease-in_4.7s_forwards]"
+          onClick={() => setIsOffline(false)}
+        >
           <span className="inline-block w-2 h-2 rounded-full bg-white animate-pulse" />
           Đang offline
         </div>

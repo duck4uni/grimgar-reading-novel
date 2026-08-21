@@ -137,3 +137,7 @@
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+@keyframes fadeOut {
+  to { opacity: 0; visibility: hidden; }
+}

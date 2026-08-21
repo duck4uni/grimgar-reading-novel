@@ -37,7 +37,7 @@ export function DownloadButton() {
         setCached(data.cached);
         setProgress(100);
         if (popoverTimer.current) clearTimeout(popoverTimer.current);
-        popoverTimer.current = setTimeout(() => setShowPopover(false), 4000);
+        popoverTimer.current = setTimeout(() => setShowPopover(false), 5000);
       } else if (data.type === "PRECACHE_STATUS") {
         if (data.done) {
           setStatus(data.quotaExceeded ? "quota_exceeded" : "done");
@@ -126,7 +126,7 @@ export function DownloadButton() {
       {showPopover && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setShowPopover(false)} />
-          <div className="absolute top-full right-0 mt-1 z-50 bg-zinc-900 text-white text-xs rounded-lg shadow-xl px-3 py-2.5 min-w-[200px] max-w-[280px]">
+          <div className="absolute top-full right-0 mt-1 z-50 bg-zinc-900 text-white text-xs rounded-lg shadow-xl px-3 py-2.5 min-w-[200px] max-w-[280px] animate-[fadeOut_0.3s_ease-in_4.7s_forwards]">
             {status === "downloading" && (
               <>
                 <p className="font-medium mb-2 flex items-center gap-1.5">
