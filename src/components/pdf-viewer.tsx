@@ -21,8 +21,19 @@ import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import { getTapDirection, toggleTapDirection } from "@/lib/settings";
 
-// Set up PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+// Set up PDF.js worker - use workerPort to avoid iOS Safari issues with
+// dynamic module import of workerSrc (react-pdf overrides workerSrc on import)
+if (typeof window !== "undefined" && !pdfjs.GlobalWorkerOptions.workerPort) {
+  try {
+    pdfjs.GlobalWorkerOptions.workerPort = new Worker(
+      new URL("/pdf.worker.min.mjs", window.location.origin),
+      { type: "module" }
+    );
+  } catch {
+    // Fallback to workerSrc if Worker constructor fails
+    pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+  }
+}
 
 interface PDFViewerProps {
   pdfUrl: string;
@@ -405,7 +416,7 @@ export default function PDFViewer({
         onTouchEnd={handleTouchEnd}
       >
         <Document
-          file={pdfUrl}
+          file={{ url: pdfUrl, disableRange: true, disableAutoFetch: true } as any}
           onLoadSuccess={onDocumentLoadSuccess}
           loading={
             <div className="flex items-center justify-center h-[70vh]">
@@ -416,8 +427,10 @@ export default function PDFViewer({
             <div className="flex flex-col items-center justify-center h-[70vh] text-white">
               <p>Không thể tải PDF</p>
               <p className="text-sm text-zinc-400 mt-2">Vui lòng kiểm tra lại file</p>
+              <p className="text-xs text-zinc-500 mt-1">{pdfUrl}</p>
             </div>
           }
+          onError={(error) => console.error("PDF load error:", error, "URL:", pdfUrl)}
         >
           <Page
             pageNumber={pageNumber}
