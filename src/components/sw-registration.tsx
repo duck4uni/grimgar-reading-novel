@@ -9,9 +9,14 @@ export function ServiceWorkerRegistration() {
   const isIOS = typeof window !== "undefined" && /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as unknown as { MSStream?: unknown }).MSStream;
 
   useEffect(() => {
-    if (isIOS && !localStorage.getItem("ios-warning-shown")) {
+    if (!isIOS) return;
+    let alreadyShown = false;
+    try { alreadyShown = !!localStorage.getItem("ios-warning-shown"); } catch {}
+    try { if (!alreadyShown) alreadyShown = !!sessionStorage.getItem("ios-warning-shown"); } catch {}
+    if (!alreadyShown) {
       setShowIOSWarning(true);
-      localStorage.setItem("ios-warning-shown", "1");
+      try { localStorage.setItem("ios-warning-shown", "1"); } catch {}
+      try { sessionStorage.setItem("ios-warning-shown", "1"); } catch {}
     }
   }, [isIOS]);
 
